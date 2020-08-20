@@ -8,31 +8,40 @@ function App() {
   const [repositories, setRepositories] = useState([]);
 
   useEffect(() => {
-    api.get('/repositories').then(result => {
-      setRepositories(result.data)
-    }).catch(err => {
-      console.error(`Error deleting => ${err}`)
-    })
+    var getRepositoriesData = async () => {
+      try {
+        const result = await api.get('/repositories');
+        setRepositories(result.data)
+      } catch(err){
+        console.error(`Error getting => ${err}`)  
+      }
+    }
+
+    getRepositoriesData();
   }, [])
 
   async function handleAddRepository() {
-    api.post('/repositories', {
-      title: `Repository ${generateId()}`,
-    }).then(result => {
-      setRepositories([...repositories, result.data])
-    }).catch(err => {
-      console.error(`Error adding => ${err}`)
-    })
+    try {
+      const result = await api.post('/repositories', {
+        title: `Repository ${generateId()}`,
+      });
+      if (result.status.toString().startsWith('2')){  //changed status according to the unit tests
+        setRepositories([...repositories, result.data])
+      }
+    } catch(err){
+      console.error(`Error deleting => ${err}`)
+    }
   }
 
   async function handleRemoveRepository(id) {
-    api.delete(`/repositories/${id}`).then(result => {
-      if (result.status == 204){
+    try {
+      const result = await api.delete(`/repositories/${id}`);
+      if (result.status === 204){
         setRepositories(repositories.filter(repository => repository.id !== id))
       }
-    }).catch(err => {
+    } catch(err) {
       console.error(`Error deleting => ${err}`)
-    })
+    }
   }
 
   return (
