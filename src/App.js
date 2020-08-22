@@ -20,6 +20,32 @@ function App() {
     getRepositoriesData();
   }, [])
 
+  function getLikesLabel (likes) {
+    if (likes>1) return `${likes} curtidas`
+    if (likes==1) return `${likes} curtida`
+    else return `Nenhuma curtida`
+  }
+
+  function setRepositoryLikes({id, likes}) {
+    setRepositories(repositories.map(a => {
+        if (a.id === id) return {...a, likes }
+        return a;
+      })
+    );
+  }
+
+  async function handleLikeRepository(id) {
+    try {
+      const result = await api.post(`/repositories/${id}/like`, {});
+      if (result.status.toString().startsWith('2')){
+        const repository = result.data;
+        setRepositoryLikes(repository);
+      }
+    } catch(err){
+      console.error(`Error liking => ${err}`)
+    }
+  }
+
   async function handleAddRepository() {
     try {
       const result = await api.post('/repositories', {
@@ -50,8 +76,9 @@ function App() {
         {repositories.map(repository => {
           console.log(repositories)
           return <li key={repository.id}>
-            {repository.title}
+            {repository.title} - {getLikesLabel(repository.likes)}
             <button onClick={() => handleRemoveRepository(repository.id)}>Remover</button>
+            <button onClick={() => handleLikeRepository(repository.id)}>+1</button>
           </li>
         })}
       </ul>
